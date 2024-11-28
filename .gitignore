@@ -1,2 +1,3 @@
 /target
 .env
+balance_history.json

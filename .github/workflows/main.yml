@@ -1,6 +1,8 @@
-name: Rust CI
+name: Suno Balance Monitor
 
 on:
+  schedule:
+    - cron: '0 */2 * * *'  # 每两小时执行一次
   push:
     branches: [ "main" ]
   pull_request:
@@ -9,9 +11,7 @@ on:
 env:
   CARGO_TERM_COLOR: always
   # 在这里定义非敏感的环境变量
-  APP_ENV: production
-  APP_DEBUG: false
-  APP_ID: "your-app-id-here"  # 如果 ID 不是敏感信息，可以直接设置
+
 
 jobs:
   build:
@@ -31,12 +31,14 @@ jobs:
         toolchain: stable
         override: true
     
-    - name: Build
+    - name: Build and Run
       env:
         # 使用 GitHub Secrets 存储敏感信息
         AUTHORIZATION: ${{ secrets.AUTHORIZATION }}
         APP_ID: ${{ secrets.APP_ID }}  # 如果 ID 是敏感信息，使用 secrets
-      run: cargo build --verbose
+      run: |
+        cargo build --verbose
+        cargo run --verbose
       
     - name: Run tests
       run: cargo test --verbose
@@ -46,3 +48,10 @@ jobs:
         AUTHORIZATION: ${{ secrets.AUTHORIZATION }}
         APP_ID: ${{ secrets.APP_ID }}
       run: cargo run --verbose
+
+    - name: Commit and push if changed
+      run: |
+        git config --global user.email "github-actions@github.com"
+        git config --global user.name "GitHub Actions"
+        git add balance_history.json
+        git diff --quiet && git diff --staged --quiet || (git commit -m "Update balance history" && git push)
