@@ -1,10 +1,15 @@
 use serde_json::{Map, Value};
 use std::collections::BTreeMap;
 use std::fs;
+use plotters::prelude::*;
 
 fn generate_trend_graph(daily_stats: &BTreeMap<String, (f64, f64, f64)>) -> String {
-    const GRAPH_WIDTH: usize = 60;
-    const GRAPH_HEIGHT: usize = 10;
+    const OUT_FILE_NAME: &str = "assets/trend.svg";
+    const SVG_WIDTH: u32 = 800;
+    const SVG_HEIGHT: u32 = 400;
+
+    // 确保 assets 目录存在
+    fs::create_dir_all("assets").unwrap();
 
     // 获取最近14天的数据
     let stats: Vec<(String, f64)> = daily_stats
@@ -18,102 +23,100 @@ fn generate_trend_graph(daily_stats: &BTreeMap<String, (f64, f64, f64)>) -> Stri
         .collect();
 
     if stats.is_empty() {
-        return String::from("暂无足够数据生成走势图");
+        return String::from("<p>暂无足够数据生成走势图</p>");
     }
 
-    // 找出最大和最小值
+    // 创建SVG后端
+    let root = SVGBackend::new(OUT_FILE_NAME, (SVG_WIDTH, SVG_HEIGHT)).into_drawing_area();
+    root.fill(&WHITE).unwrap();
+
+    // 找出数据范围
     let max_value = stats.iter().map(|(_, v)| *v).fold(0.0, f64::max);
     let min_value = stats.iter().map(|(_, v)| *v).fold(max_value, f64::min);
-    let value_range = if (max_value - min_value).abs() < f64::EPSILON {
-        1.0 // 避免除以零
+    let y_range = if (max_value - min_value).abs() < f64::EPSILON {
+        min_value - 1.0..min_value + 1.0
     } else {
-        max_value - min_value
+        let padding = (max_value - min_value) * 0.1;
+        (min_value - padding).max(0.0)..(max_value + padding)
     };
 
-    // 生成图表
-    let mut graph = String::new();
-    graph.push_str("\n```\n消耗量走势图");
-    
-    // 如果只有一天数据，显示特殊提示
-    if stats.len() == 1 {
-        graph.push_str("（当前仅有一天数据）");
-    } else {
-        graph.push_str("（最近14天）");
-    }
-    graph.push_str(":\n\n");
+    let x_range = 0.0..stats.len() as f64;
 
-    // Y轴刻度
-    for i in (0..GRAPH_HEIGHT).rev() {
-        let value = if stats.len() == 1 {
-            // 单天数据时，以当前值为中心，上下浮动20%
-            let current = stats[0].1;
-            let range = current * 0.2;
-            current - range + (range * 2.0 * i as f64 / (GRAPH_HEIGHT as f64 - 1.0))
-        } else {
-            min_value + (value_range * (i as f64) / (GRAPH_HEIGHT as f64 - 1.0))
-        };
-        graph.push_str(&format!("{:5.1} │", value));
-
-        // 添加数据点和连线
-        let mut last_pos = None;
-        for (idx, (_, daily)) in stats.iter().enumerate() {
-            let pos =
-                ((GRAPH_WIDTH - 1) as f64 * idx as f64 / (stats.len() - 1).max(1) as f64) as usize;
-            let normalized_height = if stats.len() == 1 {
-                (GRAPH_HEIGHT / 2) as f64
+    // 创建图表
+    let mut chart = ChartBuilder::on(&root)
+        .margin(50)
+        .caption(
+            if stats.len() == 1 {
+                "使用量走势图（当前仅有一天数据）"
             } else {
-                (GRAPH_HEIGHT - 1) as f64 * (*daily - min_value) / value_range
-            };
-            let current_height = normalized_height.round() as usize;
+                "使用量走势图（最近14天）"
+            },
+            ("sans-serif", 20).into_font().color(&BLACK),
+        )
+        .x_label_area_size(35)
+        .y_label_area_size(45)
+        .build_cartesian_2d(x_range, y_range)
+        .unwrap();
 
-            if i == current_height {
-                let spaces = if let Some(last) = last_pos {
-                    if pos > last {
-                        pos - last - 1
-                    } else {
-                        0
-                    }
-                } else {
-                    pos
-                };
-                graph.push_str(&" ".repeat(spaces));
-                graph.push('●');
-                last_pos = Some(pos);
+    // 设置网格样式
+    chart
+        .configure_mesh()
+        .x_labels(stats.len())
+        .x_label_formatter(&|x| {
+            if let Some((date, _)) = stats.get(*x as usize) {
+                date[5..].to_string()  // 只显示月-日
+            } else {
+                String::new()
             }
-        }
-        graph.push('\n');
-    }
+        })
+        .y_label_formatter(&|y| format!("{:.1}", y))
+        .axis_style(BLACK.mix(0.8))
+        .light_line_style(BLACK.mix(0.2))
+        .draw()
+        .unwrap();
 
-    // X轴
-    graph.push_str("      └");
-    graph.push_str(&"─".repeat(GRAPH_WIDTH));
-    graph.push('\n');
+    // 绘制数据线和点
+    if stats.len() > 1 {
+        // 绘制折线
+        chart
+            .draw_series(LineSeries::new(
+                stats.iter().enumerate().map(|(i, (_, value))| (i as f64, *value)),
+                RGBColor(33, 150, 243).filled(),
+            ))
+            .unwrap();
 
-    // X轴日期标签
-    graph.push_str("        ");
-    if stats.len() == 1 {
-        // 单天数据时只显示一个日期
-        let date = &stats[0].0;
-        let date_str = &date[5..]; // 只显示月-日
-        graph.push_str(date_str);
+        // 绘制数据点
+        chart
+            .draw_series(PointSeries::of_element(
+                stats.iter().enumerate().map(|(i, (_, value))| (i as f64, *value)),
+                5,
+                RGBColor(33, 150, 243).filled(),
+                &|coord, size, style| {
+                    EmptyElement::at(coord)
+                        + Circle::new((0, 0), size, style)
+                },
+            ))
+            .unwrap();
     } else {
-        // 多天数据时显示首尾日期
-        let label_positions = [0, stats.len() - 1];
-        for pos in label_positions {
-            if pos < stats.len() {
-                let date = &stats[pos].0;
-                let date_str = &date[5..]; // 只显示月-日
-                graph.push_str(&format!(
-                    "{:<width$}",
-                    date_str,
-                    width = if pos == 0 { 30 } else { 0 }
-                ));
-            }
-        }
+        // 单个数据点
+        chart
+            .draw_series(PointSeries::of_element(
+                vec![(0.0, stats[0].1)],
+                5,
+                RGBColor(33, 150, 243).filled(),
+                &|coord, size, style| {
+                    EmptyElement::at(coord)
+                        + Circle::new((0, 0), size, style)
+                },
+            ))
+            .unwrap();
     }
 
-    graph.push_str("\n```\n");
-    graph
+    // 保存图表
+    root.present().unwrap();
+
+    // 返回引用链接
+    format!("![使用量走势图]({})", OUT_FILE_NAME)
 }
 
 pub fn update_readme(history: &Map<String, Value>) -> Result<(), Box<dyn std::error::Error>> {
@@ -166,6 +169,7 @@ pub fn update_readme(history: &Map<String, Value>) -> Result<(), Box<dyn std::er
     );
 
     // 添加走势图
+    readme_content.push_str("\n## 使用量走势\n\n");
     readme_content.push_str(&generate_trend_graph(&daily_stats));
 
     // 添加表格标题和表头
