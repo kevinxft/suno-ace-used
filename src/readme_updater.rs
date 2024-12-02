@@ -1,7 +1,7 @@
+use plotters::prelude::*;
 use serde_json::{Map, Value};
 use std::collections::BTreeMap;
 use std::fs;
-use plotters::prelude::*;
 
 fn generate_trend_graph(daily_stats: &BTreeMap<String, (f64, f64, f64)>) -> String {
     const OUT_FILE_NAME: &str = "assets/trend.svg";
@@ -64,7 +64,7 @@ fn generate_trend_graph(daily_stats: &BTreeMap<String, (f64, f64, f64)>) -> Stri
         .x_labels(stats.len())
         .x_label_formatter(&|x| {
             if let Some((date, _)) = stats.get(*x as usize) {
-                date[5..].to_string()  // 只显示月-日
+                date[5..].to_string() // 只显示月-日
             } else {
                 String::new()
             }
@@ -80,7 +80,10 @@ fn generate_trend_graph(daily_stats: &BTreeMap<String, (f64, f64, f64)>) -> Stri
         // 绘制折线
         chart
             .draw_series(LineSeries::new(
-                stats.iter().enumerate().map(|(i, (_, value))| (i as f64, *value)),
+                stats
+                    .iter()
+                    .enumerate()
+                    .map(|(i, (_, value))| (i as f64, *value)),
                 RGBColor(33, 150, 243).filled(),
             ))
             .unwrap();
@@ -88,13 +91,13 @@ fn generate_trend_graph(daily_stats: &BTreeMap<String, (f64, f64, f64)>) -> Stri
         // 绘制数据点
         chart
             .draw_series(PointSeries::of_element(
-                stats.iter().enumerate().map(|(i, (_, value))| (i as f64, *value)),
+                stats
+                    .iter()
+                    .enumerate()
+                    .map(|(i, (_, value))| (i as f64, *value)),
                 5,
                 RGBColor(33, 150, 243).filled(),
-                &|coord, size, style| {
-                    EmptyElement::at(coord)
-                        + Circle::new((0, 0), size, style)
-                },
+                &|coord, size, style| EmptyElement::at(coord) + Circle::new((0, 0), size, style),
             ))
             .unwrap();
     } else {
@@ -104,10 +107,7 @@ fn generate_trend_graph(daily_stats: &BTreeMap<String, (f64, f64, f64)>) -> Stri
                 vec![(0.0, stats[0].1)],
                 5,
                 RGBColor(33, 150, 243).filled(),
-                &|coord, size, style| {
-                    EmptyElement::at(coord)
-                        + Circle::new((0, 0), size, style)
-                },
+                &|coord, size, style| EmptyElement::at(coord) + Circle::new((0, 0), size, style),
             ))
             .unwrap();
     }
@@ -169,7 +169,6 @@ pub fn update_readme(history: &Map<String, Value>) -> Result<(), Box<dyn std::er
     );
 
     // 添加走势图
-    readme_content.push_str("\n## 使用量走势\n\n");
     readme_content.push_str(&generate_trend_graph(&daily_stats));
 
     // 添加表格标题和表头
