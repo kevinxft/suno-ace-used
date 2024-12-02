@@ -141,10 +141,10 @@
 12-02
 </text>
 <polyline fill="none" opacity="0.8" stroke="#000000" stroke-width="1" points="618,315 618,320 "/>
-<polyline fill="none" opacity="1" stroke="#2196F3" stroke-width="1" points="95,98 225,309 356,314 487,166 618,189 "/>
+<polyline fill="none" opacity="1" stroke="#2196F3" stroke-width="1" points="95,98 225,309 356,314 487,166 618,166 "/>
 <circle cx="95" cy="98" r="5" opacity="1" fill="#2196F3" stroke="none" stroke-width="1"/>
 <circle cx="225" cy="309" r="5" opacity="1" fill="#2196F3" stroke="none" stroke-width="1"/>
 <circle cx="356" cy="314" r="5" opacity="1" fill="#2196F3" stroke="none" stroke-width="1"/>
 <circle cx="487" cy="166" r="5" opacity="1" fill="#2196F3" stroke="none" stroke-width="1"/>
-<circle cx="618" cy="189" r="5" opacity="1" fill="#2196F3" stroke="none" stroke-width="1"/>
+<circle cx="618" cy="166" r="5" opacity="1" fill="#2196F3" stroke="none" stroke-width="1"/>
 </svg>
