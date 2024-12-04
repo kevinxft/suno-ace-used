@@ -164,11 +164,38 @@ pub fn update_readme(history: &Map<String, Value>) -> Result<(), Box<dyn std::er
 
 这个仓库用于追踪 Suno API 的使用情况，每两小时自动更新一次数据。
 
-## 使用量走势
+## 使用统计
+
 "#,
     );
 
+    // 计算日平均消耗和预计剩余天数
+    let total_days = daily_stats.len() as f64;
+    let total_consumption: f64 = daily_stats.values().map(|(_, _, daily)| daily).sum();
+    let daily_average = total_consumption / total_days;
+    
+    let latest_remaining = daily_stats.values().next_back().map(|(_, remaining, _)| remaining).unwrap_or(&0.0);
+    let estimated_days = if daily_average > 0.0 { latest_remaining / daily_average } else { 0.0 };
+
+    // 添加使用统计表格
+    readme_content.push_str(&format!(
+        r#"
+| 指标 | 数值 |
+|------|------|
+| 日平均消耗 | {:.2} |
+| 预计剩余天数 | {:.1} |
+
+"#,
+        daily_average,
+        estimated_days
+    ));
+
     // 添加走势图
+    readme_content.push_str(
+        r#"
+## 使用量走势
+"#,
+    );
     readme_content.push_str(&generate_trend_graph(&daily_stats));
 
     // 添加表格标题和表头
