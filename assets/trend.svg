@@ -188,12 +188,12 @@
 12-05
 </text>
 <polyline fill="none" opacity="0.8" stroke="#000000" stroke-width="1" points="655,315 655,320 "/>
-<polyline fill="none" opacity="1" stroke="#2196F3" stroke-width="1" points="95,156 188,310 281,314 375,206 468,227 562,98 655,302 "/>
+<polyline fill="none" opacity="1" stroke="#2196F3" stroke-width="1" points="95,156 188,310 281,314 375,206 468,227 562,98 655,290 "/>
 <circle cx="95" cy="156" r="5" opacity="1" fill="#2196F3" stroke="none" stroke-width="1"/>
 <circle cx="188" cy="310" r="5" opacity="1" fill="#2196F3" stroke="none" stroke-width="1"/>
 <circle cx="281" cy="314" r="5" opacity="1" fill="#2196F3" stroke="none" stroke-width="1"/>
 <circle cx="375" cy="206" r="5" opacity="1" fill="#2196F3" stroke="none" stroke-width="1"/>
 <circle cx="468" cy="227" r="5" opacity="1" fill="#2196F3" stroke="none" stroke-width="1"/>
 <circle cx="562" cy="98" r="5" opacity="1" fill="#2196F3" stroke="none" stroke-width="1"/>
-<circle cx="655" cy="302" r="5" opacity="1" fill="#2196F3" stroke="none" stroke-width="1"/>
+<circle cx="655" cy="290" r="5" opacity="1" fill="#2196F3" stroke="none" stroke-width="1"/>
 </svg>
