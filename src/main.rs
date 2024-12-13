@@ -59,6 +59,24 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             Map::new()
         };
 
+        // 检查是否需要清空历史数据
+        let should_clear = history.iter().any(|(_, value)| {
+            if let Some(prev_remaining) = value["remaining_amount"]
+                .as_str()
+                .and_then(|s| s.parse::<f64>().ok())
+            {
+                remaining > prev_remaining
+            } else {
+                false
+            }
+        });
+
+        // 如果需要清空历史，创建新的空 Map
+        if should_clear {
+            history = Map::new();
+            println!("检测到余额增加，已清空历史数据");
+        }
+
         // 添加新的数据
         history.insert(today, data);
 
