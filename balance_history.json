@@ -68,5 +68,10 @@
     "remaining_amount": "31.24",
     "timestamp": "2024-12-12 22:24:29",
     "used_amount": "70.76"
+  },
+  "2024-12-13": {
+    "remaining_amount": "28.34",
+    "timestamp": "2024-12-13 01:59:34",
+    "used_amount": "73.66"
   }
 }
