@@ -125,36 +125,45 @@ pub fn update_readme(history: &Map<String, Value>) -> Result<(), Box<dyn std::er
 
     // 收集所有数据
     for (date, data) in history {
-        let used = data["used_amount"]
-            .as_str()
-            .and_then(|s| s.parse::<f64>().ok())
-            .unwrap_or(0.0);
         let remaining = data["remaining_amount"]
             .as_str()
             .and_then(|s| s.parse::<f64>().ok())
             .unwrap_or(0.0);
-        daily_stats.insert(date.clone(), (used, remaining, 0.0)); // 第三个值用于存储当日消耗
+        daily_stats.insert(date.clone(), (0.0, remaining, 0.0));
     }
 
-    // 计算每日消耗
+    // 计算每日消耗，并处理充值情况
     let dates: Vec<String> = daily_stats.keys().cloned().collect();
+    let mut last_valid_date = dates.first().cloned();
+    
     for i in 1..dates.len() {
         let current_date = &dates[i];
         let prev_date = &dates[i - 1];
-        if let (Some(&(current_used, _, _)), Some(&(prev_used, _, _))) =
+        
+        if let (Some(&(_, current_remaining, _)), Some(&(_, prev_remaining, _))) =
             (daily_stats.get(current_date), daily_stats.get(prev_date))
         {
-            let daily_usage = current_used - prev_used;
-            if let Some(stat) = daily_stats.get_mut(current_date) {
-                stat.2 = daily_usage;
+            // 检查是否发生充值（剩余额度增加）
+            if current_remaining > prev_remaining {
+                // 发生充值，清除之前的统计数据
+                for j in 0..i {
+                    if let Some(stat) = daily_stats.get_mut(&dates[j]) {
+                        stat.2 = 0.0; // 清除之前的消耗统计
+                    }
+                }
+                // 更新最后有效日期
+                last_valid_date = Some(current_date.clone());
+                // 当天消耗设为0
+                if let Some(stat) = daily_stats.get_mut(current_date) {
+                    stat.2 = 0.0;
+                }
+            } else {
+                // 正常计算消耗
+                let daily_usage = prev_remaining - current_remaining;
+                if let Some(stat) = daily_stats.get_mut(current_date) {
+                    stat.2 = daily_usage;
+                }
             }
-        }
-    }
-
-    // 为第一天设置初始消耗量
-    if let Some(first_date) = dates.first() {
-        if let Some(stat) = daily_stats.get_mut(first_date) {
-            stat.2 = stat.0; // 第一天的消耗就是其总使用量
         }
     }
 
@@ -169,11 +178,20 @@ pub fn update_readme(history: &Map<String, Value>) -> Result<(), Box<dyn std::er
 "#,
     );
 
-    // 计算日平均消耗和预计剩余天数
-    let total_days = daily_stats.len() as f64;
-    let total_consumption: f64 = daily_stats.values().map(|(_, _, daily)| daily).sum();
-    let daily_average = total_consumption / total_days;
+    // 计算日平均消耗和预计剩余天数（只计算最后一次充值后的数据）
+    let mut valid_days = 0.0;
+    let mut valid_consumption = 0.0;
     
+    if let Some(last_valid) = last_valid_date {
+        for (date, (_, _, daily)) in daily_stats.iter() {
+            if date >= &last_valid {
+                valid_consumption += daily;
+                valid_days += 1.0;
+            }
+        }
+    }
+
+    let daily_average = if valid_days > 0.0 { valid_consumption / valid_days } else { 0.0 };
     let latest_remaining = daily_stats.values().next_back().map(|(_, remaining, _)| remaining).unwrap_or(&0.0);
     let estimated_days = if daily_average > 0.0 { latest_remaining / daily_average } else { 0.0 };
 
@@ -203,16 +221,16 @@ pub fn update_readme(history: &Map<String, Value>) -> Result<(), Box<dyn std::er
         r#"
 ## 每日消耗统计
 
-| 日期 | 当日消耗量 | 累计使用量 | 剩余额度 |
-|------|------------|------------|-----------|
+| 日期 | 当日消耗量 | 剩余额度 |
+|------|------------|-----------|
 "#,
     );
 
     // 添加表格内容（倒序）
-    for (date, (used, remaining, daily)) in daily_stats.iter().rev() {
+    for (date, (_, remaining, daily)) in daily_stats.iter().rev() {
         readme_content.push_str(&format!(
-            "| {} | {:.2} | {:.2} | {:.2} |\n",
-            date, daily, used, remaining
+            "| {} | {:.2} | {:.2} |\n",
+            date, daily, remaining
         ));
     }
 
@@ -221,8 +239,7 @@ pub fn update_readme(history: &Map<String, Value>) -> Result<(), Box<dyn std::er
         r#"
 ## 说明
 
-- 当日消耗量：当天的使用量相比前一天的增加值
-- 累计使用量：从开始统计到当天的总使用量
+- 当日消耗量：当天剩余额度相比前一天剩余额度的减少值
 - 剩余额度：当天的剩余可用额度
 
 数据每两小时自动更新一次，通过 GitHub Actions 自动运行。"#,
