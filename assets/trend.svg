@@ -103,7 +103,6 @@
 <line opacity="0.2" stroke="#000000" stroke-width="1" x1="95" y1="88" x2="749" y2="88"/>
 <line opacity="0.2" stroke="#000000" stroke-width="1" x1="95" y1="85" x2="749" y2="85"/>
 <line opacity="0.2" stroke="#000000" stroke-width="1" x1="95" y1="81" x2="749" y2="81"/>
-<line opacity="0.2" stroke="#000000" stroke-width="1" x1="95" y1="78" x2="749" y2="78"/>
 <line opacity="0.2" stroke="#000000" stroke-width="1" x1="95" y1="314" x2="95" y2="76"/>
 <line opacity="0.2" stroke="#000000" stroke-width="1" x1="313" y1="314" x2="313" y2="76"/>
 <line opacity="0.2" stroke="#000000" stroke-width="1" x1="531" y1="314" x2="531" y2="76"/>
@@ -122,31 +121,31 @@
 </text>
 <polyline fill="none" opacity="0.8" stroke="#000000" stroke-width="1" points="89,314 94,314 "/>
 <text x="85" y="281" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="9.67741935483871" opacity="1" fill="#000000">
-0.1
+0.2
 </text>
 <polyline fill="none" opacity="0.8" stroke="#000000" stroke-width="1" points="89,281 94,281 "/>
 <text x="85" y="247" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="9.67741935483871" opacity="1" fill="#000000">
-0.1
+0.4
 </text>
 <polyline fill="none" opacity="0.8" stroke="#000000" stroke-width="1" points="89,247 94,247 "/>
 <text x="85" y="213" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="9.67741935483871" opacity="1" fill="#000000">
-0.2
+0.6
 </text>
 <polyline fill="none" opacity="0.8" stroke="#000000" stroke-width="1" points="89,213 94,213 "/>
 <text x="85" y="179" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="9.67741935483871" opacity="1" fill="#000000">
-0.2
+0.8
 </text>
 <polyline fill="none" opacity="0.8" stroke="#000000" stroke-width="1" points="89,179 94,179 "/>
 <text x="85" y="145" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="9.67741935483871" opacity="1" fill="#000000">
-0.2
+1.0
 </text>
 <polyline fill="none" opacity="0.8" stroke="#000000" stroke-width="1" points="89,145 94,145 "/>
 <text x="85" y="112" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="9.67741935483871" opacity="1" fill="#000000">
-0.3
+1.2
 </text>
 <polyline fill="none" opacity="0.8" stroke="#000000" stroke-width="1" points="89,112 94,112 "/>
 <text x="85" y="78" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="9.67741935483871" opacity="1" fill="#000000">
-0.3
+1.4
 </text>
 <polyline fill="none" opacity="0.8" stroke="#000000" stroke-width="1" points="89,78 94,78 "/>
 <polyline fill="none" opacity="0.8" stroke="#000000" stroke-width="1" points="95,315 749,315 "/>
