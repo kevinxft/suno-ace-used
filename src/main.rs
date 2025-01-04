@@ -60,13 +60,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .to_string();
         
         let should_clear = if let Some(yesterday_data) = history.get(&yesterday) {
-            if let (Some(yesterday_remaining), Some(today_remaining)) = (
-                yesterday_data["remaining_amount"]
-                    .as_str()
-                    .and_then(|s| s.parse::<f64>().ok()),
-                remaining,
-            ) {
-                today_remaining > yesterday_remaining
+            if let Some(yesterday_remaining) = yesterday_data["remaining_amount"]
+                .as_str()
+                .and_then(|s| s.parse::<f64>().ok())
+            {
+                remaining > yesterday_remaining
             } else {
                 false
             }
@@ -82,14 +80,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         // 计算今天的使用量
         let today_usage = if let Some(yesterday_data) = history.get(&yesterday) {
-            if let (Some(yesterday_remaining), Some(today_remaining)) = (
-                yesterday_data["remaining_amount"]
-                    .as_str()
-                    .and_then(|s| s.parse::<f64>().ok()),
-                remaining,
-            ) {
-                if today_remaining <= yesterday_remaining {
-                    yesterday_remaining - today_remaining
+            if let Some(yesterday_remaining) = yesterday_data["remaining_amount"]
+                .as_str()
+                .and_then(|s| s.parse::<f64>().ok())
+            {
+                if remaining <= yesterday_remaining {
+                    yesterday_remaining - remaining
                 } else {
                     used // 如果今天充值了，就使用API返回的used值
                 }
