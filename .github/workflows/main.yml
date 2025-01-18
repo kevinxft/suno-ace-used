@@ -1,18 +1,21 @@
 name: Suno Balance Monitor
 
+# 注释掉自动触发的配置
+# on:
+#   schedule:
+#     - cron: '0 */2 * * *'  # 每两小时执行一次
+#   push:
+#     branches: [ "main" ]
+#   pull_request:
+#     branches: [ "main" ]
+
+# 改为只在手动触发时运行
 on:
-  schedule:
-    - cron: '0 */2 * * *'  # 每两小时执行一次
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+  workflow_dispatch:
 
 env:
   CARGO_TERM_COLOR: always
-  # 在这里定义非敏感的环境变量
 
-# 添加权限配置
 permissions:
   contents: write
 
@@ -20,14 +23,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     
-    env:
-      # 在 job 级别定义环境变量
-      JOB_SPECIFIC_VAR: value
-
     steps:
     - uses: actions/checkout@v3
       with:
-        # 确保我们有完整的 git 历史
         fetch-depth: 0
     
     - name: Install Rust toolchain
@@ -39,9 +37,8 @@ jobs:
     
     - name: Build and Run
       env:
-        # 使用 GitHub Secrets 存储敏感信息
         AUTHORIZATION: ${{ secrets.AUTHORIZATION }}
-        APP_ID: ${{ secrets.APP_ID }}  # 如果 ID 是敏感信息，使用 secrets
+        APP_ID: ${{ secrets.APP_ID }}
       run: |
         cargo build --verbose
         cargo run --verbose
